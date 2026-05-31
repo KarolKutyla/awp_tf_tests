@@ -48,7 +48,7 @@ class AdversarialPlots:
 
 
     def _probs_and_indices(self, x: tf.Tensor):
-        logits = self._attack.model(x)
+        logits = self._attack.model(x, training=False)
         probs = tf.nn.softmax(logits)
         max_probs = tf.reduce_max(probs, axis=-1)
         indices = tf.argmax(probs, axis=-1)
