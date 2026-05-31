@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awp-tf-tests"
+version = "0.1.0"
+requires-python = ">=3.9"
+
+dependencies = [
+    "awp_tf @ git+https://github.com/KarolKutyla/awp_tf.git",
+    "keras-hub",
+    "keras-cv",
+    "tensorflow-datasets",
+    "importlib-resources",
+    "matplotlib"
+]
+
+[tool.setuptools.packages.find]
+include = ["awp_tf_tests*"]

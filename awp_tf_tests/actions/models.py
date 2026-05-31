@@ -2,8 +2,8 @@ import tensorflow as tf
 import keras_cv
 from tensorflow.keras import layers
 
-from actions import preact_resnet_18
-from actions import wide_resnet_28
+from awp_tf_tests.actions import preact_resnet_18
+from awp_tf_tests.actions import wide_resnet_28
 
 def load_tensorflow_resnet(steps_per_epoch):
     backbone = keras_cv.models.ResNet18Backbone(
