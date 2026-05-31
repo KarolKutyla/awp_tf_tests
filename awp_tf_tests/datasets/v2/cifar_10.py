@@ -6,6 +6,8 @@ def load_cifar_dataset():
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
     tf_train_ds = (
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
+        .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)))
+        .cache()
         .shuffle(50000)
         .map(_transform_train_as_in_a_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
         .batch(128, drop_remainder=False)
@@ -35,21 +37,20 @@ def load_cifar_labels():
     }
 
 
-def load_cifar_test_with_mapped_attack(attack):
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
-
-    tf_test_ds = (
-        tf.data.Dataset.from_tensor_slices((x_test, y_test))
-        .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(128, drop_remainder=False)
-        .map(lambda x, y: (attack.generate(x, y), y))
-        .prefetch(tf.data.AUTOTUNE)
-    )
-    return tf_test_ds
+# def load_cifar_test_with_mapped_attack(attack):
+#     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+#
+#     tf_test_ds = (
+#         tf.data.Dataset.from_tensor_slices((x_test, y_test))
+#         .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
+#         .batch(128, drop_remainder=False)
+#         .map(lambda x, y: (attack.generate(x, y), y), num_parallel_calls=tf.data.AUTOTUNE)
+#         .prefetch(tf.data.AUTOTUNE)
+#     )
+#     return tf_test_ds
 
 
 def _transform_train_as_in_a_research_paper(image, label):
-    image = tf.cast(image, tf.float32)
     image = tf.pad(
         image,
         paddings=[[4, 4], [4, 4], [0, 0]],
@@ -58,5 +59,4 @@ def _transform_train_as_in_a_research_paper(image, label):
     )
     image = tf.image.random_crop(image, size=[32, 32, 3])
     image = tf.image.random_flip_left_right(image)
-    image = tf.keras.applications.resnet_v2.preprocess_input(image)
-    return image, tf.cast(label, tf.int32)
+    return image, label
