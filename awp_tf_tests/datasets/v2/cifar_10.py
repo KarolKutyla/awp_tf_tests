@@ -41,8 +41,8 @@ def load_cifar_test_with_mapped_attack(attack):
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
         .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
-        .map(lambda x, y: (attack.generate(x, y), y))
         .batch(128, drop_remainder=False)
+        .map(lambda x, y: (attack.generate(x, y), y))
         .prefetch(tf.data.AUTOTUNE)
     )
     return tf_test_ds
