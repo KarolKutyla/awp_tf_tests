@@ -1,12 +1,12 @@
 import tensorflow as tf
-
+from tensorflow import keras
 
 
 def load_cifar_dataset():
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+    (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     tf_train_ds = (
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
-        .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)))
+        .map(lambda x, y: (keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)))
         .cache()
         .shuffle(50000)
         .map(_transform_train_as_in_a_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
@@ -15,7 +15,7 @@ def load_cifar_dataset():
     )
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
-        .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda x, y: (keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
         .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
