@@ -22,6 +22,38 @@ def load_cifar_dataset():
     return tf_train_ds, tf_test_ds
 
 
+def load_cifar_awp_split_dataset():
+    subset_size = 25000
+    (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
+    tf_train_ds = (
+        tf.data.Dataset.from_tensor_slices((x_train[:subset_size], y_train[:subset_size]))
+        .map(lambda x, y: (keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)))
+        .cache()
+        .shuffle(25000)
+        .map(_transform_train_as_in_a_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(128, drop_remainder=False)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    tf_awp_train_ds = (
+        tf.data.Dataset.from_tensor_slices((x_train[subset_size:], y_train[subset_size:]))
+        .map(lambda x, y: (keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)))
+        .cache()
+        .shuffle(25000)
+        .map(_transform_train_as_in_a_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(128, drop_remainder=False)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    tf_test_ds = (
+        tf.data.Dataset.from_tensor_slices((x_test, y_test))
+        .map(lambda x, y: (keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(128, drop_remainder=False)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+    return tf_train_ds, tf_awp_train_ds, tf_test_ds
+
+
 def load_cifar_labels():
     return {
         0: "airplane",
@@ -35,19 +67,6 @@ def load_cifar_labels():
         8: "ship",
         9: "truck"
     }
-
-
-# def load_cifar_test_with_mapped_attack(attack):
-#     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
-#
-#     tf_test_ds = (
-#         tf.data.Dataset.from_tensor_slices((x_test, y_test))
-#         .map(lambda x, y: (tf.keras.applications.resnet_v2.preprocess_input(tf.cast(x, tf.float32)), tf.cast(y, tf.int32)), num_parallel_calls=tf.data.AUTOTUNE)
-#         .batch(128, drop_remainder=False)
-#         .map(lambda x, y: (attack.generate(x, y), y), num_parallel_calls=tf.data.AUTOTUNE)
-#         .prefetch(tf.data.AUTOTUNE)
-#     )
-#     return tf_test_ds
 
 
 def _transform_train_as_in_a_research_paper(image, label):
