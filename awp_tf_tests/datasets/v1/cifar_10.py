@@ -7,6 +7,8 @@ def load_cifar_dataset():
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     tf_train_ds = (
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
+        .map(scale, num_parallel_calls=tf.data.AUTOTUNE)
+        .cache()
         .shuffle(50000)
         .map(transform_train_as_in_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
         .batch(128, drop_remainder=False)
@@ -14,15 +16,20 @@ def load_cifar_dataset():
     )
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
-        .map(lambda x, y: (tf.cast(x, dtype=tf.float32) / 255.0, y), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(scale, num_parallel_calls=tf.data.AUTOTUNE)
+        .cache()
         .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
     return tf_train_ds, tf_test_ds
 
 
-def transform_train_as_in_research_paper(image, label):
+def scale(image, label):
     image = tf.cast(image, tf.float32) / 255.0
+    return image, label
+
+
+def transform_train_as_in_research_paper(image, label):
     image = tf.pad(
         image,
         paddings=[[4, 4], [4, 4], [0, 0]],
