@@ -29,7 +29,7 @@ def load_normalized_cifar_dataset():
         .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
-    return tf_train_ds, tf_test_ds
+    return tf_train_ds, tf_test_ds, mean, std
 
 
 def load_cifar_dataset():
